@@ -1,6 +1,8 @@
 package day5
 
+import scala.annotation.tailrec
 import scala.collection.immutable.ListMap
+import scala.io.Source
 
 val test = """seeds: 79 14 55 13
 
@@ -36,12 +38,13 @@ humidity-to-location map:
 60 56 37
 56 93 4"""
 
-val getDigits: (String => List[Int]) = "\\d+".r.findAllIn(_).map(_.toInt).toList
+val getDigits: (String => List[BigInt]) =
+  "\\d+".r.findAllIn(_).map(BigInt(_)).toList
 
 enum ParsedLine:
   case Blank
   case Title(title: String)
-  case Ints(ints: List[Int])
+  case Ints(ints: List[BigInt])
 
 def parseLine(line: String): ParsedLine =
   if line == "" then ParsedLine.Blank
@@ -52,9 +55,10 @@ def parseLine(line: String): ParsedLine =
 
 def parseMappings(
     lines: List[String]
-): (List[Int], ListMap[String, List[Mapping]]) =
+): (List[BigInt], ListMap[String, List[Mapping]]) =
   val seeds = getDigits(lines.head)
 
+  @tailrec
   def loop(
       lines: List[String],
       currentTitle: String,
@@ -78,72 +82,38 @@ def parseMappings(
 
   (seeds, loop(lines.tail, "", ListMap()))
 
-case class Mapping(destStart: Int, sourceStart: Int, length: Int) {
+case class Mapping(destStart: BigInt, sourceStart: BigInt, length: BigInt) {
   val destRange = destStart to (destStart + length)
   val sourceRange = sourceStart to (sourceStart + length)
 
-  infix def contains(n: Int): Boolean =
+  infix def contains(n: BigInt): Boolean =
     sourceRange contains n
 
-  def map(n: Int): Int =
-    // println(s"yarr: $n")
-    this contains n match
-      case true  => destStart + (n - sourceStart)
-      case false => n
-
-  def map2(n: Int): Option[Int] =
+  def search(n: BigInt): Option[BigInt] =
     this contains n match
       case true  => Some(destStart + (n - sourceStart))
       case false => None
 }
 
-def applyMappings(n: Int, mappings: List[Mapping]): Int =
-  mappings
-    .map(_.map2(n))
-    .foldLeft(n)((acc, x) =>
-      x match
-        case Some(int) => int
-        case None      => n
-    )
-
-def traverseMappings(n: Int, mappings: List[List[Mapping]]): Int =
-  mappings.foldLeft(n)((acc: Int, x: List[Mapping]) => {
-    val yarr = x.foldLeft(acc)((acc2: Int, x2: Mapping) => {
-      val foo = x2.map2(acc2)
-      foo match
-        case Some(_) => foo
-        case None    => acc2
-    })
-    yarr match
-      case Some[Int](y) => y
-      case None         => acc
-  })
-
-// def traverseMappings(n: Int, mappings: List[List[Mapping]]) =
-//   mappings.
-
-// def traverseMappings2(
-//     seed: Int,
-//     mappings: ListMap[String, List[Mapping]]
-// ): Int =
+def traverseMappings(n: BigInt, mappings: List[List[Mapping]]): BigInt =
+  mappings match
+    case Nil => n
+    case x :: xs => {
+      x.flatMap(_.search(n)) match
+        case head :: next => traverseMappings(head, xs)
+        case Nil          => traverseMappings(n, xs)
+    }
 
 @main def foo: Unit =
-  val (seeds, mappings) = parseMappings(test.split("\n").toList)
-  val ns =
-    mappings.values.map(_.foldLeft(seeds.head)((acc, x) => x.map(acc)))
+  val input = Source.fromFile("resources/day5.txt").getLines.toList
+  val (seeds, mappings) = parseMappings(input)
 
-  var seed = 79
-  // mappings.values.foreach(x => {
-  //   println(x)
-  //   println("BUM")
-  //   println(x.map(_.map(seed)))
-  //   var acc = x.foldLeft(seed)((a, b) => b.map(a))
-  //   println(acc)
-  //   seed = acc
-  // })
+  val locations = seeds.map(traverseMappings(_, mappings.values.toList))
+
+  println(locations.min)
 
   println("foo")
-  println(mappings.values.map(_.map(_.map2(seed))))
-  println(mappings.values.map(_.map(_.map2(seed))))
-  println(mappings.values.map(applyMappings(seed, _)))
-  println(applyMappings(79, mappings.values.toList(0)))
+
+  val pt2seeds = seeds.grouped(2).flatMap(x => x(0) to x(1))
+  println(pt2seeds.toList)
+  println("bar")
