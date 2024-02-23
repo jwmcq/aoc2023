@@ -82,9 +82,12 @@ def parseMappings(
 
   (seeds, loop(lines.tail, "", ListMap()))
 
-case class Mapping(destStart: BigInt, sourceStart: BigInt, length: BigInt) {
-  val destRange = destStart to (destStart + length)
-  val sourceRange = sourceStart to (sourceStart + length)
+sealed trait SearchMap
+case object Failed extends SearchMap
+case class Mapping(destStart: BigInt, sourceStart: BigInt, length: BigInt)
+    extends SearchMap {
+  val destRange = destStart to (destStart + length - 1)
+  val sourceRange = sourceStart to (sourceStart + length - 1)
 
   infix def contains(n: BigInt): Boolean =
     sourceRange contains n
@@ -93,18 +96,27 @@ case class Mapping(destStart: BigInt, sourceStart: BigInt, length: BigInt) {
     this contains n match
       case true  => Some(destStart + (n - sourceStart))
       case false => None
+
+  def search(m: SearchMap): SearchMap =
+    m match
+      case Failed => Failed
+      case x      => ???
+
 }
 
+@tailrec
 def traverseMappings(n: BigInt, mappings: List[List[Mapping]]): BigInt =
   mappings match
     case Nil => n
     case x :: xs => {
-      x.flatMap(_.search(n)) match
-        case head :: next => traverseMappings(head, xs)
-        case Nil          => traverseMappings(n, xs)
+      val v = x.flatMap(_.search(n))
+      v match
+        case head :: _ => traverseMappings(head, xs)
+        case Nil       => traverseMappings(n, xs)
     }
 
 @main def foo: Unit =
+  val testInput = test.split("\n").toList
   val input = Source.fromFile("resources/day5.txt").getLines.toList
   val (seeds, mappings) = parseMappings(input)
 
@@ -114,6 +126,12 @@ def traverseMappings(n: BigInt, mappings: List[List[Mapping]]): BigInt =
 
   println("foo")
 
-  val pt2seeds = seeds.grouped(2).flatMap(x => x(0) to x(1))
-  println(pt2seeds.toList)
-  println("bar")
+  val pt2seeds =
+    seeds.grouped(2).flatMap(x => (x(0) to (x(0) + x(1) - 1)))
+  val pt2dests = pt2seeds.map(traverseMappings(_, mappings.values.toList))
+  // // not 550427451 apparently
+  // // ... or 31161858 (too high)
+  println(pt2dests.min)
+  // // println(pt2dests.toList)
+  // println(pt2seeds.toList)
+  println("barrrrr")
