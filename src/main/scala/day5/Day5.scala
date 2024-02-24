@@ -86,11 +86,8 @@ case class Mapping(destStart: BigInt, sourceStart: BigInt, length: BigInt) {
   val destRange = destStart to (destStart + length - 1)
   val sourceRange = sourceStart to (sourceStart + length - 1)
 
-  infix def contains(n: BigInt): Boolean =
-    sourceRange contains n
-
   def search(n: BigInt): Option[BigInt] =
-    this contains n match
+    sourceRange contains n match
       case true  => Some(destStart + (n - sourceStart))
       case false => None
 }
@@ -109,17 +106,17 @@ def traverseMappings(n: BigInt, mappings: List[List[Mapping]]): BigInt =
 @main def foo: Unit =
   val testInput = test.split("\n").toList
   val input = Source.fromFile("resources/day5.txt").getLines.toList
-  val (seeds, mappings) = parseMappings(input)
+  val (seeds, mappings) = parseMappings(testInput)
 
   val locations = seeds.map(traverseMappings(_, mappings.values.toList))
 
+  println("part 1:")
   println(locations.min)
-
-  println("foo")
 
   val pt2seeds =
     seeds.grouped(2).flatMap(x => (x(0) to (x(0) + x(1) - 1)))
   // literally just yoloing this
-  val pt2dests = pt2seeds.map(traverseMappings(_, mappings.values.toList))
-  println(pt2dests.min)
-  println("barrrrr")
+  val pt2locations = pt2seeds.map(traverseMappings(_, mappings.values.toList))
+
+  println("part 2:")
+  println(pt2locations.min)
