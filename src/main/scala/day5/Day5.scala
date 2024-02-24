@@ -82,10 +82,7 @@ def parseMappings(
 
   (seeds, loop(lines.tail, "", ListMap()))
 
-sealed trait SearchMap
-case object Failed extends SearchMap
-case class Mapping(destStart: BigInt, sourceStart: BigInt, length: BigInt)
-    extends SearchMap {
+case class Mapping(destStart: BigInt, sourceStart: BigInt, length: BigInt) {
   val destRange = destStart to (destStart + length - 1)
   val sourceRange = sourceStart to (sourceStart + length - 1)
 
@@ -96,12 +93,6 @@ case class Mapping(destStart: BigInt, sourceStart: BigInt, length: BigInt)
     this contains n match
       case true  => Some(destStart + (n - sourceStart))
       case false => None
-
-  def search(m: SearchMap): SearchMap =
-    m match
-      case Failed => Failed
-      case x      => ???
-
 }
 
 @tailrec
@@ -128,10 +119,7 @@ def traverseMappings(n: BigInt, mappings: List[List[Mapping]]): BigInt =
 
   val pt2seeds =
     seeds.grouped(2).flatMap(x => (x(0) to (x(0) + x(1) - 1)))
+  // literally just yoloing this
   val pt2dests = pt2seeds.map(traverseMappings(_, mappings.values.toList))
-  // // not 550427451 apparently
-  // // ... or 31161858 (too high)
   println(pt2dests.min)
-  // // println(pt2dests.toList)
-  // println(pt2seeds.toList)
   println("barrrrr")
