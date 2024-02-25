@@ -2,41 +2,8 @@ package day5
 
 import scala.annotation.tailrec
 import scala.collection.immutable.ListMap
+import scala.collection.parallel.CollectionConverters._
 import scala.io.Source
-
-val test = """seeds: 79 14 55 13
-
-seed-to-soil map:
-50 98 2
-52 50 48
-
-soil-to-fertilizer map:
-0 15 37
-37 52 2
-39 0 15
-
-fertilizer-to-water map:
-49 53 8
-0 11 42
-42 0 7
-57 7 4
-
-water-to-light map:
-88 18 7
-18 25 70
-
-light-to-temperature map:
-45 77 23
-81 45 19
-68 64 13
-
-temperature-to-humidity map:
-0 69 1
-1 0 69
-
-humidity-to-location map:
-60 56 37
-56 93 4"""
 
 val getDigits: (String => List[BigInt]) =
   "\\d+".r.findAllIn(_).map(BigInt(_)).toList
@@ -45,6 +12,16 @@ enum ParsedLine:
   case Blank
   case Title(title: String)
   case Ints(ints: List[BigInt])
+
+case class Mapping(destStart: BigInt, sourceStart: BigInt, length: BigInt) {
+  val destRange = destStart to (destStart + length - 1)
+  val sourceRange = sourceStart to (sourceStart + length - 1)
+
+  def search(n: BigInt): Option[BigInt] =
+    sourceRange contains n match
+      case true  => Some(destStart + (n - sourceStart))
+      case false => None
+}
 
 def parseLine(line: String): ParsedLine =
   if line == "" then ParsedLine.Blank
@@ -82,16 +59,6 @@ def parseMappings(
 
   (seeds, loop(lines.tail, "", ListMap()))
 
-case class Mapping(destStart: BigInt, sourceStart: BigInt, length: BigInt) {
-  val destRange = destStart to (destStart + length - 1)
-  val sourceRange = sourceStart to (sourceStart + length - 1)
-
-  def search(n: BigInt): Option[BigInt] =
-    sourceRange contains n match
-      case true  => Some(destStart + (n - sourceStart))
-      case false => None
-}
-
 @tailrec
 def traverseMappings(n: BigInt, mappings: List[List[Mapping]]): BigInt =
   mappings match
@@ -104,11 +71,12 @@ def traverseMappings(n: BigInt, mappings: List[List[Mapping]]): BigInt =
     }
 
 @main def foo: Unit =
-  val testInput = test.split("\n").toList
   val input = Source.fromFile("resources/day5.txt").getLines.toList
-  val (seeds, mappings) = parseMappings(testInput)
+  val (seeds, mappings) = parseMappings(input)
 
   val locations = seeds.map(traverseMappings(_, mappings.values.toList))
+
+  val start = System.currentTimeMillis
 
   println("part 1:")
   println(locations.min)
@@ -116,7 +84,13 @@ def traverseMappings(n: BigInt, mappings: List[List[Mapping]]): BigInt =
   val pt2seeds =
     seeds.grouped(2).flatMap(x => (x(0) to (x(0) + x(1) - 1)))
   // literally just yoloing this
-  val pt2locations = pt2seeds.map(traverseMappings(_, mappings.values.toList))
+  val pt2locations =
+    pt2seeds.toList.par.map(traverseMappings(_, mappings.values.toList))
 
   println("part 2:")
   println(pt2locations.min)
+
+  val finish = System.currentTimeMillis - start
+
+  println(s"took $finish")
+  // took 18620209ms without par
