@@ -1,10 +1,10 @@
 package day6
 
-case class Race(time: Int, distance: BigInt) {
-  def run(holdTime: BigInt): BigInt =
-    holdTime * (BigInt(time) - holdTime)
+case class Race(time: Int, distance: Long) {
+  def run(holdTime: Long): Long =
+    holdTime * (time - holdTime)
 
-  def isWin(holdTime: BigInt): Boolean =
+  def isWin(holdTime: Long): Boolean =
     run(holdTime) > distance
 
   def winningAttempts: List[Int] =
