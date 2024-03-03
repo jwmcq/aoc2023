@@ -64,8 +64,5 @@ object Parser:
       .map((h, i) => h._2 * (i + 1))
       .sum
 
-  val pt1 = sumWinnings(Pt1Ordering)
-  val pt2 = sumWinnings(Pt2Ordering)
-
-  println(pt1)
-  println(pt2)
+  println(sumWinnings(Pt1Ordering))
+  println(sumWinnings(Pt2Ordering))
