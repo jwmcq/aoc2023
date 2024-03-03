@@ -13,9 +13,13 @@ given Ordering[HandType] with
 
 import HandType._
 
-case class Hand(cards: String):
-  def handType: HandType =
-    cards.groupBy(identity).values.map(_.length).toList.sorted match
+case class Hand(cards: String)
+
+abstract class HandOrdering extends Ordering[Hand]:
+  val cardRank: Map[Char, Int]
+
+  def handType(hand: Hand): HandType =
+    hand.cards.groupBy(identity).values.map(_.length).toList.sorted match
       case List(5)          => FiveOfKind
       case List(1, 4)       => FourOfKind
       case List(2, 3)       => FullHouse
@@ -23,16 +27,6 @@ case class Hand(cards: String):
       case List(1, 2, 2)    => TwoPair
       case List(1, 1, 1, 2) => OnePair
       case _                => HighCard
-
-  def handType2: HandType =
-    "23456789TQKA"
-      .map(c => Hand(cards.replaceAll("J", c.toString)))
-      .maxBy(_.handType)
-      .handType
-
-abstract class HandOrdering extends Ordering[Hand]:
-  val cardRank: Map[Char, Int]
-  val handType: Hand => HandType
 
   def compare(x: Hand, y: Hand): Int =
     handType(x) compare handType(y) match
@@ -46,11 +40,15 @@ abstract class HandOrdering extends Ordering[Hand]:
 
 object Pt1Ordering extends HandOrdering:
   override val cardRank = "23456789TJQKA".zipWithIndex.toMap
-  override val handType = _.handType
 
 object Pt2Ordering extends HandOrdering:
   override val cardRank = "J23456789TQKA".zipWithIndex.toMap
-  override val handType = _.handType2
+  override def handType(hand: Hand): HandType =
+    super.handType(
+      "23456789TQKA"
+        .map(c => Hand(hand.cards.replaceAll("J", c.toString)))
+        .maxBy(super.handType(_))
+    )
 
 object Parser:
   def parseLine(line: String): (Hand, Int) =
