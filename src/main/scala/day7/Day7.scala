@@ -3,14 +3,6 @@ package day7
 import scala.io.Source
 import math.Ordered.orderingToOrdered
 
-val testLines = List(
-  "32T3K 765",
-  "T55J5 684",
-  "KK677 28",
-  "KTJJT 220",
-  "QQQJA 483"
-)
-
 enum HandType:
   case FiveOfKind, FourOfKind, FullHouse, ThreeOfKind, TwoPair, OnePair,
     HighCard
@@ -66,7 +58,6 @@ object Parser:
     (Hand(items(0)), items(1).toInt)
 
 @main def day7: Unit =
-  val testPlays = testLines.map(Parser.parseLine)
   val plays =
     Source.fromFile("resources/day7.txt").getLines.map(Parser.parseLine).toList
 
