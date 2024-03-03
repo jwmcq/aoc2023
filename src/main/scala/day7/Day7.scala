@@ -63,7 +63,7 @@ object Parser:
     plays
       .sortBy(_._1)(ordering)
       .zipWithIndex
-      .map((p, v) => p._2 * (v + 1))
+      .map((h, i) => h._2 * (i + 1))
       .sum
 
   val pt1 = sumWinnings(Pt1Ordering)
