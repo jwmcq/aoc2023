@@ -44,11 +44,9 @@ object Pt1Ordering extends HandOrdering:
 object Pt2Ordering extends HandOrdering:
   override val cardRank = "J23456789TQKA".zipWithIndex.toMap
   override def handType(hand: Hand): HandType =
-    super.handType(
-      "23456789TQKA"
-        .map(c => Hand(hand.cards.replaceAll("J", c.toString)))
-        .maxBy(super.handType(_))
-    )
+    "23456789TQKA"
+      .map(c => super.handType(Hand(hand.cards.replaceAll("J", c.toString))))
+      .max
 
 object Parser:
   def parseLine(line: String): (Hand, Int) =
