@@ -59,7 +59,7 @@ object Parser:
   val plays =
     Source.fromFile("resources/day7.txt").getLines.map(Parser.parseLine).toList
 
-  val sumWinnings = (ordering: Ordering[Hand]) =>
+  val sumWinnings = (ordering: HandOrdering) =>
     plays
       .sortBy(_._1)(ordering)
       .zipWithIndex
