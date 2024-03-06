@@ -15,7 +15,7 @@ import HandType._
 
 case class Hand(cards: String)
 
-abstract class HandOrdering extends Ordering[Hand]:
+abstract class HandRules extends Ordering[Hand]:
   val cardRank: Map[Char, Int]
 
   def handType(hand: Hand): HandType =
@@ -38,10 +38,10 @@ abstract class HandOrdering extends Ordering[Hand]:
           .head
       case r => r
 
-object Pt1Ordering extends HandOrdering:
+object Pt1Rules extends HandRules:
   override val cardRank = "23456789TJQKA".zipWithIndex.toMap
 
-object Pt2Ordering extends HandOrdering:
+object Pt2Rules extends HandRules:
   override val cardRank = "J23456789TQKA".zipWithIndex.toMap
   override def handType(hand: Hand): HandType =
     "23456789TQKA"
@@ -57,12 +57,12 @@ object Parser:
   val plays =
     Source.fromFile("resources/day7.txt").getLines.map(Parser.parseLine).toList
 
-  val sumWinnings = (ordering: HandOrdering) =>
+  val sumWinnings = (ordering: HandRules) =>
     plays
       .sortBy(_._1)(ordering)
       .zipWithIndex
       .map((h, i) => h._2 * (i + 1))
       .sum
 
-  println(sumWinnings(Pt1Ordering))
-  println(sumWinnings(Pt2Ordering))
+  println(sumWinnings(Pt1Rules))
+  println(sumWinnings(Pt2Rules))
