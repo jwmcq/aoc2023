@@ -27,22 +27,22 @@ object Parser:
     val nodeNames = line.filter(_.isLetter).grouped(3).toList
     (nodeNames(0), Node(nodeNames(0), nodeNames(1), nodeNames(2)))
 
-  def parseLines(lines: Seq[String]): (LazyList[Direction], Map[String, Node]) =
-    val directions = LazyList.continually(parseDirections(lines.head)).flatten
+  def parseLines(lines: Seq[String]): (Iterator[Direction], Map[String, Node]) =
+    val directions = Iterator.continually(parseDirections(lines.head)).flatten
     (directions, lines.tail.tail.map(parseNode).toMap)
 
 def walkMap(
     start: String,
-    directions: LazyList[Direction],
+    directions: Iterator[Direction],
     nodes: Map[String, Node]
-): LazyList[Node] =
+): Iterator[Node] =
   directions.scanLeft(nodes(start)) { (node: Node, dir: Direction) =>
     dir match
       case Direction.Left  => nodes(node.left)
       case Direction.Right => nodes(node.right)
   }
 
-def pt2(directions: LazyList[Direction], nodes: Map[String, Node]): Int =
+def pt2(directions: Iterator[Direction], nodes: Map[String, Node]): Int =
   val aNodes = nodes.keys.filter(_(2) == 'A').toList
   println(aNodes)
   val walkers = aNodes.map(walkMap(_, directions, nodes).toIterator)
@@ -55,19 +55,23 @@ def pt2(directions: LazyList[Direction], nodes: Map[String, Node]): Int =
   println(paths)
   1
 
-def part2(directions: LazyList[Direction], nodes: Map[String, Node]): Int =
+def part2(directions: Iterator[Direction], nodes: Map[String, Node]): Int =
   val aNodes = nodes.keys.filter(_(2) == 'A').toList
-  for {
-    walkers <- aNodes.map(walkMap(_, directions, nodes).toIterator)
-  }
-    1
+  val walkers = aNodes.map(walkMap(_, directions, nodes))
+  def loop(count: Int, walkers: List[Iterator[Node]]): Int =
+    val step = walkers.flatMap(_.nextOption())
+    if step.forall(_.name(2) == 'Z') then count
+    else loop(count + 1, walkers)
+
+  loop(0, walkers)
 
 @main def day8: Unit =
-  // val (directions, nodes) = Parser.parseLines(testLines)
-  val (directions, nodes) =
-    Parser.parseLines(Source.fromFile("resources/day8.txt").getLines.toList)
+  val (directions, nodes) = Parser.parseLines(testLines)
+  // val (directions, nodes) =
+  //   Parser.parseLines(Source.fromFile("resources/day8.txt").getLines.toList)
 
   val steps =
     walkMap("AAA", directions, nodes).takeWhile(_.name != "ZZZ").toList
-  // println(steps.length)
-  println(pt2(directions, nodes))
+  println(steps.length)
+  println("yarrr")
+  println(part2(directions, nodes))
