@@ -42,19 +42,6 @@ def walkMap(
       case Direction.Right => nodes(node.right)
   }
 
-def pt2(directions: Iterator[Direction], nodes: Map[String, Node]): Int =
-  val aNodes = nodes.keys.filter(_(2) == 'A').toList
-  println(aNodes)
-  val walkers = aNodes.map(walkMap(_, directions, nodes).toIterator)
-  println(walkers.toList)
-  val paths = walkers
-    .takeWhile((ws: Iterator[Node]) => !(ws.forall(_.name(2) == 'Z')))
-    .toList
-    .head
-    .length
-  println(paths)
-  1
-
 def part2(directions: Iterator[Direction], nodes: Map[String, Node]): Int =
   val aNodes = nodes.keys.filter(_(2) == 'A').toList
   val walkers = aNodes.map(walkMap(_, directions, nodes))
@@ -66,9 +53,9 @@ def part2(directions: Iterator[Direction], nodes: Map[String, Node]): Int =
   loop(0, walkers)
 
 @main def day8: Unit =
-  val (directions, nodes) = Parser.parseLines(testLines)
-  // val (directions, nodes) =
-  //   Parser.parseLines(Source.fromFile("resources/day8.txt").getLines.toList)
+  // val (directions, nodes) = Parser.parseLines(testLines)
+  val (directions, nodes) =
+    Parser.parseLines(Source.fromFile("resources/day8.txt").getLines.toList)
 
   val steps =
     walkMap("AAA", directions, nodes).takeWhile(_.name != "ZZZ").toList
