@@ -7,12 +7,25 @@ case class Node(name: String, left: String, right: String)
 enum Direction:
   case Left, Right
 
+// val testLines = List(
+//   "LLR",
+//   "",
+//   "AAA = (BBB, BBB)",
+//   "BBB = (AAA, ZZZ)",
+//   "ZZZ = (ZZZ, ZZZ)"
+// )
+
 val testLines = List(
-  "LLR",
+  "LR",
   "",
-  "AAA = (BBB, BBB)",
-  "BBB = (AAA, ZZZ)",
-  "ZZZ = (ZZZ, ZZZ)"
+  "IIA = (IIB, XXX)",
+  "IIB = (XXX, IIZ)",
+  "IIZ = (IIB, XXX)",
+  "TTA = (TTB, XXX)",
+  "TTB = (TTC, TTC)",
+  "TTC = (TTZ, TTZ)",
+  "TTZ = (TTB, TTB)",
+  "XXX = (XXX, XXX)"
 )
 
 object Parser:
@@ -44,7 +57,8 @@ def walkMap(
 
 def part2(directions: Iterator[Direction], nodes: Map[String, Node]): Int =
   val aNodes = nodes.keys.filter(_(2) == 'A').toList
-  val walkers = aNodes.map(walkMap(_, directions, nodes))
+  val directions2 = directions.flatMap(List.fill(aNodes.length)(_))
+  val walkers = aNodes.map(walkMap(_, directions2, nodes))
   def loop(count: Int, walkers: List[Iterator[Node]]): Int =
     val step = walkers.flatMap(_.nextOption())
     if step.forall(_.name(2) == 'Z') then count
@@ -57,8 +71,8 @@ def part2(directions: Iterator[Direction], nodes: Map[String, Node]): Int =
   val (directions, nodes) =
     Parser.parseLines(Source.fromFile("resources/day8.txt").getLines.toList)
 
-  val steps =
-    walkMap("AAA", directions, nodes).takeWhile(_.name != "ZZZ").toList
-  println(steps.length)
+  // val steps =
+  //   walkMap("AAA", directions, nodes).takeWhile(_.name != "ZZZ").toList
+  // println(steps.length)
   println("yarrr")
   println(part2(directions, nodes))
