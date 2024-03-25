@@ -10,6 +10,8 @@ val testInput = List(
 
 extension (i: Int) def |-|(j: Int): Int = (i - j).abs
 
+// question - is it possible to make Sandreadings a subtype of Seq[Int]?
+// this would make the code a lot nicer
 case class SandReadings(ints: Seq[Int]):
   def diffs: SandReadings =
     SandReadings(ints.sliding(2).map(_.reduce((a, b) => b - a)).toSeq)
