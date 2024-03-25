@@ -10,17 +10,28 @@ val testInput = List(
 
 extension (i: Int) def |-|(j: Int): Int = (i - j).abs
 
-def diffs(ints: Seq[Int]): Seq[Int] =
-  ints.sliding(2).map(_.reduce((a, b) => b - a)).toSeq
+case class SandReadings(ints: Seq[Int]):
+  def diffs: SandReadings =
+    SandReadings(ints.sliding(2).map(_.reduce((a, b) => b - a)).toSeq)
 
-def exhaustDiffs(ints: Seq[Int]): LazyList[Seq[Int]] =
-  LazyList.iterate(ints)(diffs).takeWhile(s => !(s.forall(_ == 0)))
+  def exhaustDiffs: LazyList[SandReadings] =
+    LazyList.iterate(this)(_.diffs).takeWhile(s => !(s.ints.forall(_ == 0)))
 
-def parseInput(lines: Seq[String]): Seq[Seq[Int]] =
-  lines.map(_.split(" ").map(_.toInt))
+  def fillLastVal: SandReadings =
+    def loop(seqs: Seq[SandReadings]): Seq[Int] =
+      seqs.isEmpty match
+        case true => Seq(0)
+        case false =>
+          seqs.head.ints :+ (seqs.head.ints.last + loop(seqs.tail).last)
+    SandReadings(loop(this.exhaustDiffs))
+
+def parseInput(lines: Seq[String]): Seq[SandReadings] =
+  lines.map(_.split(" ").map(_.toInt)).map(SandReadings(_))
 
 @main def day9: Unit =
-  val input = testInput
+  // val input = testInput
+  val input = Source.fromFile("resources/day9.txt").getLines.toSeq
   val intSeqs = parseInput(input)
-  println(exhaustDiffs(intSeqs(0)).toList)
-  println("foo")
+  println(intSeqs.map(_.fillLastVal.ints.last).sum)
+
+  println("fo")
