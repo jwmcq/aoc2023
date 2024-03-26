@@ -38,4 +38,4 @@ def parseInput(lines: Seq[String]): Seq[SandReadings] =
   println(intSeqs.map(_.fillLastVal.ints.last).sum)
   println(intSeqs.map(_.fillFirstVal.ints.head).sum)
 
-  println("fo")
+  println("foo")
