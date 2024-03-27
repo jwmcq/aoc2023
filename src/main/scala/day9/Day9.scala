@@ -3,7 +3,8 @@ package day9
 import scala.io.Source
 
 // question - is it possible to make Sandreadings a subtype of Seq[Int]?
-// this would make the code a lot nicer
+// this would make the code a lot nicer (less having to build intermediate
+// SandReadings objects)
 // maybe there's some sort of trait I should use but not sure what/how
 case class SandReadings(ints: Seq[Int]):
   def diffs: SandReadings =
