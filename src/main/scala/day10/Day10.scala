@@ -33,7 +33,14 @@ case object Start extends Tile('S')
 
 case class MapTile(symbol: Char, loc: Coord) extends Tile(symbol)
 
-// object Parser:
+type TileMap = Array[Array[MapTile]]
+
+extension (map: TileMap) def loc(x: Int, y: Int): MapTile = map(y)(x)
+
+object Parser:
+  def parseLines(lines: Seq[String]): TileMap =
+    // seq.map(_.map())
+    ???
 
 @main def day10: Unit =
   val foo = Pipe.valueOf("|").openings
